@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        BUCKET_NAME = "shubhamwebsitewithawss3"
-        AWS_DEFAULT_REGION = "ap-south-1"
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        S3_BUCKET = 'shubhamwebsitewithawss3'
     }
 
     stages {
@@ -11,8 +11,8 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'github-creds',
-                    url: 'https://github.com/khisteshubham/aws-terraform-cicd-app.git'
+                    url: 'https://github.com/khisteshubham/aws-terraform-cicd-app.git',
+                    credentialsId: 'github-creds'
             }
         }
 
@@ -24,27 +24,26 @@ pipeline {
         }
 
         stage('Deploy to S3') {
-    steps {
-        withCredentials([
-            string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
-        ]) {
-            bat '''
-            set AWS_DEFAULT_REGION=ap-south-1
-            aws s3 sync . s3://shubhamwebsitewithawss3 --delete ^
-              --exclude ".git/*" ^
-              --exclude ".terraform/*" ^
-              --exclude "*.tf" ^
-              --exclude "Jenkinsfile"
-            '''
+            steps {
+                withCredentials([
+                    string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    bat '''
+                    aws s3 sync . s3://%S3_BUCKET% --delete ^
+                      --exclude ".git/*" ^
+                      --exclude ".terraform/*" ^
+                      --exclude "*.tf" ^
+                      --exclude "Jenkinsfile"
+                    '''
+                }
+            }
         }
     }
-}
-
 
     post {
         success {
-            echo 'Deployment to S3 successful '
+            echo 'Deployment successful 🚀'
         }
         failure {
             echo 'Deployment failed ❌'
