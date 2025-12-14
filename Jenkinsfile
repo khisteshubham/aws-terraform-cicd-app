@@ -19,22 +19,19 @@ pipeline {
         stage('Build Application') {
             steps {
                 echo 'Building static website...'
-                sh '''
-                  echo "Build completed"
-                '''
+                bat 'echo Build completed'
             }
         }
 
         stage('Deploy to S3') {
             steps {
                 withAWS(credentials: 'aws-s3-creds', region: 'ap-south-1') {
-                    sh '''
-                      aws s3 sync . s3://$BUCKET_NAME \
-                        --delete \
-                        --exclude ".git/*" \
-                        --exclude ".terraform/*" \
-                        --exclude "*.tf" \
-                        --exclude "Jenkinsfile"
+                    bat '''
+                    aws s3 sync . s3://%BUCKET_NAME% --delete ^
+                      --exclude ".git/*" ^
+                      --exclude ".terraform/*" ^
+                      --exclude "*.tf" ^
+                      --exclude "Jenkinsfile"
                     '''
                 }
             }
