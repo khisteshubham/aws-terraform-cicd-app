@@ -24,19 +24,23 @@ pipeline {
         }
 
         stage('Deploy to S3') {
-            steps {
-                withAWS(credentials: 'aws-s3-creds', region: 'ap-south-1') {
-                    bat '''
-                    aws s3 sync . s3://%BUCKET_NAME% --delete ^
-                      --exclude ".git/*" ^
-                      --exclude ".terraform/*" ^
-                      --exclude "*.tf" ^
-                      --exclude "Jenkinsfile"
-                    '''
-                }
-            }
+    steps {
+        withCredentials([
+            string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+        ]) {
+            bat '''
+            set AWS_DEFAULT_REGION=ap-south-1
+            aws s3 sync . s3://shubhamwebsitewithawss3 --delete ^
+              --exclude ".git/*" ^
+              --exclude ".terraform/*" ^
+              --exclude "*.tf" ^
+              --exclude "Jenkinsfile"
+            '''
         }
     }
+}
+
 
     post {
         success {
